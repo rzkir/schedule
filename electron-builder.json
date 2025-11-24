@@ -1,57 +1,34 @@
 {
-  "appId": "com.schedule.app",
-  "productName": "Schedule",
-  "directories": {
-    "output": "dist",
-    "buildResources": "build"
-  },
-  "files": [
-    "electron/**/*",
-    ".next/**/*",
-    "public/**/*",
-    "package.json",
-    "node_modules/**/*"
-  ],
-  "extraFiles": [
-    {
-      "from": "public",
-      "to": "public"
+    "appId": "com.rizverse.desktop",
+    "productName": "Schedule",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "electron/main.js",
+      "electron/preload.js",
+      "out/**/*",
+      "public/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.productivity",
+      "target": "dmg",
+      "icon": "public/logo.jpg"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "public/logo.ico",
+      "sign": false,
+      "signAndEditExecutable": false
+    },
+    "linux": {
+      "target": "AppImage",
+      "category": "Utility",
+      "icon": "public/logo.jpg"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
     }
-  ],
-  "win": {
-    "target": [
-      {
-        "target": "nsis",
-        "arch": ["x64"]
-      }
-    ],
-    "icon": "public/logo.ico"
-  },
-  "nsis": {
-    "oneClick": false,
-    "allowToChangeInstallationDirectory": true,
-    "createDesktopShortcut": true,
-    "createStartMenuShortcut": true
-  },
-  "mac": {
-    "target": [
-      {
-        "target": "dmg",
-        "arch": ["x64", "arm64"]
-      }
-    ],
-    "icon": "public/logo.png",
-    "category": "public.app-category.productivity"
-  },
-  "linux": {
-    "target": [
-      {
-        "target": "AppImage",
-        "arch": ["x64"]
-      }
-    ],
-    "icon": "public/logo.png",
-    "category": "Office"
   }
-}
-
