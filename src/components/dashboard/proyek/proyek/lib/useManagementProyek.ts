@@ -11,6 +11,7 @@ import {
   onSnapshot,
   query,
   orderBy,
+  where,
   doc,
   updateDoc,
   deleteDoc,
@@ -23,6 +24,8 @@ import { Proyek } from "@/types/Proyek";
 import useManagementCategory from "../../category/lib/useManagementCategory";
 
 import useManagementFramework from "../../framework/lib/useManagementFramework";
+
+import { useAuth } from "@/utils/context/AuthContext";
 
 const defaultForm: Omit<Proyek, "id" | "createdAt" | "updatedAt"> = {
   title: "",
@@ -42,6 +45,7 @@ const defaultForm: Omit<Proyek, "id" | "createdAt" | "updatedAt"> = {
 };
 
 export default function useManagementProyek() {
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [form, setForm] =
     useState<Omit<Proyek, "id" | "createdAt" | "updatedAt">>(defaultForm);
@@ -124,12 +128,12 @@ export default function useManagementProyek() {
     e:
       | ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
       | {
-          target: {
-            name: string;
-            value: string | number | string[];
-            type?: string;
-          };
-        }
+        target: {
+          name: string;
+          value: string | number | string[];
+          type?: string;
+        };
+      }
   ) => {
     const { name, value, type } = e.target;
     if (type === "date") {
@@ -212,10 +216,16 @@ export default function useManagementProyek() {
         const fw = frameworks.find((f) => f.id === fid);
         return { name: fw ? fw.name : fid };
       });
+      if (!user?.uid) {
+        toast.error("Anda harus login untuk menambah proyek");
+        return;
+      }
+
       await addDoc(
         collection(db, process.env.NEXT_PUBLIC_COLLECTIONS_PROYEK as string),
         {
           ...form,
+          uid: user.uid,
           category: categoryName, // Simpan name, bukan id
           framework: frameworkArr, // Simpan array of object
           thumbnail: thumbnailUrl,
@@ -301,9 +311,9 @@ export default function useManagementProyek() {
     // Konversi framework dari array of object ke array of id
     const frameworkIds = Array.isArray(proyek.framework)
       ? proyek.framework.map((fw: { name: string } | string) => {
-          if (typeof fw === "string") return fw;
-          return frameworks.find((f) => f.name === fw.name)?.id || fw.name;
-        })
+        if (typeof fw === "string") return fw;
+        return frameworks.find((f) => f.name === fw.name)?.id || fw.name;
+      })
       : [];
     // Cari id kategori berdasarkan nama kategori yang ada di proyek
     const categoryId =

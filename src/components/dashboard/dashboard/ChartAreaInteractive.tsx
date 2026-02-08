@@ -30,8 +30,9 @@ import {
     ToggleGroupItem,
 } from "@/components/ui/toggle-group"
 import { db } from "@/utils/firebase/firebase"
-import { collection, onSnapshot, query, orderBy } from "firebase/firestore"
+import { collection, onSnapshot, query, orderBy, where } from "firebase/firestore"
 import { Proyek } from "@/types/Proyek"
+import { useAuth } from "@/utils/context/AuthContext"
 
 export const description = "An interactive area chart showing project progress"
 
@@ -58,6 +59,7 @@ const chartConfig = {
 } satisfies ChartConfig
 
 export function ChartAreaInteractive() {
+    const { user } = useAuth()
     const isMobile = useIsMobile()
     const [timeRange, setTimeRange] = React.useState("90d")
     const [projects, setProjects] = React.useState<Proyek[]>([])
@@ -69,10 +71,16 @@ export function ChartAreaInteractive() {
         }
     }, [isMobile])
 
-    // Fetch projects from Firebase
+    // Fetch projects from Firebase filtered by user uid
     React.useEffect(() => {
+        if (!user?.uid) {
+            setLoading(false)
+            return
+        }
+
         const q = query(
             collection(db, process.env.NEXT_PUBLIC_COLLECTIONS_PROYEK as string),
+            where("uid", "==", user.uid),
             orderBy("createdAt", "desc")
         )
 
@@ -86,7 +94,7 @@ export function ChartAreaInteractive() {
         })
 
         return () => unsubscribe()
-    }, [])
+    }, [user?.uid])
 
     // Generate chart data based on projects
     const generateChartData = React.useMemo(() => {

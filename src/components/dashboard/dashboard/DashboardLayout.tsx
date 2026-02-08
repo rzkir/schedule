@@ -17,20 +17,30 @@ import DashboardSkelaton from "@/components/dashboard/dashboard/DashboardSkelato
 
 import { db } from "@/utils/firebase/firebase";
 
-import { collection, onSnapshot, query, orderBy, Timestamp } from "firebase/firestore";
+import { collection, onSnapshot, query, orderBy, where, Timestamp } from "firebase/firestore";
 
 import { Proyek } from "@/types/Proyek";
 
 import { FormatIndoDate } from "@/lib/formatDate";
 
+import { useAuth } from "@/utils/context/AuthContext";
+
 export default function DashboardLayout() {
+    const { user } = useAuth();
     const [proyeks, setProyeks] = useState<Proyek[]>([]);
     const [loading, setLoading] = useState(true);
 
-    // Fetch projects data
+    // Fetch projects data filtered by user uid
     useEffect(() => {
+        if (!user?.uid) {
+            setLoading(false);
+            return;
+        }
+
+        setLoading(true);
         const q = query(
             collection(db, process.env.NEXT_PUBLIC_COLLECTIONS_PROYEK as string),
+            where("uid", "==", user.uid),
             orderBy("createdAt", "desc")
         );
         const unsub = onSnapshot(q, (snapshot) => {
@@ -43,7 +53,7 @@ export default function DashboardLayout() {
             setLoading(false);
         });
         return () => unsub();
-    }, []);
+    }, [user?.uid]);
 
     // Calculate statistics
     const totalOrders = proyeks.length;
@@ -107,7 +117,7 @@ export default function DashboardLayout() {
     const chartData = getMonthlyData();
     const recentOrders = getRecentOrders();
 
-    if (loading) {
+    if (!user || loading) {
         return <DashboardSkelaton />;
     }
 

@@ -26,6 +26,7 @@ interface accountsList {
 
 interface Proyek {
   id: string;
+  uid?: string;
   title: string;
   description: string;
   start_date: Timestamp;
